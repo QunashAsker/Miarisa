@@ -9,6 +9,7 @@ interface ButtonProps {
   size?: 'default' | 'medium' | 'large'
   className?: string
   onClick?: () => void
+  type?: 'button' | 'submit' | 'reset'
 }
 
 export default function Button({
@@ -17,6 +18,7 @@ export default function Button({
   size = 'default',
   className = '',
   onClick,
+  type = 'button',
 }: ButtonProps) {
   const baseStyles = 'rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2'
   
@@ -35,6 +37,7 @@ export default function Button({
   
   return (
     <motion.button
+      type={type}
       whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
