@@ -33,6 +33,7 @@ export default function DemoPage() {
       const fetchSimulation = async () => {
         setIsLoading(true)
         try {
+          console.log('Вызов calculateOrchardState с параметрами:', { gdd, temperature, leafWetness, windSpeed, codlingMothTraps })
           const result = await calculateOrchardState({
             gdd,
             temperature,
@@ -40,6 +41,7 @@ export default function DemoPage() {
             windSpeed,
             codlingMothTraps,
           })
+          console.log('Получен результат от сервера:', result)
           if (result && result.phenoPhase) {
             setSimulationResult(result)
           } else {
@@ -53,7 +55,7 @@ export default function DemoPage() {
               bbchCode: 0,
               stageNameRu: 'Ошибка загрузки',
               gddThreshold: 0,
-              description: 'Не удалось загрузить данные из БД',
+              description: error instanceof Error ? error.message : 'Не удалось загрузить данные из БД',
             },
             diseaseRisk: {
               level: 'Низкий',
@@ -66,7 +68,7 @@ export default function DemoPage() {
             recommendations: [{
               type: 'warning',
               title: 'Ошибка',
-              message: 'Не удалось загрузить данные из базы данных. Проверьте подключение.',
+              message: error instanceof Error ? `Ошибка: ${error.message}` : 'Не удалось загрузить данные из базы данных. Проверьте подключение.',
             }],
           })
         } finally {
@@ -74,8 +76,8 @@ export default function DemoPage() {
         }
       }
       
-      // Дебаунс для избежания частых запросов
-      const timeoutId = setTimeout(fetchSimulation, 300)
+      // Уменьшенный дебаунс для более быстрой реакции, особенно для GDD
+      const timeoutId = setTimeout(fetchSimulation, 150)
       return () => clearTimeout(timeoutId)
     }
   }, [step, gdd, temperature, leafWetness, windSpeed, codlingMothTraps])

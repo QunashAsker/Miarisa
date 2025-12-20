@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
 
 export interface SimulationParams {
   gdd: number // Накопленные градусо-дни (Base 5°C)
@@ -40,14 +41,16 @@ export async function calculateOrchardState(
 ): Promise<SimulationResult> {
   const { gdd, temperature, leafWetness, windSpeed, codlingMothTraps } = params
 
+  // Отключаем кэширование для этого экшена
+  revalidatePath('/demo')
+  
+  console.log('[Server Action] calculateOrchardState вызван с GDD:', gdd, 'Temperature:', temperature)
+
   // 1. Определение фенофазы на основе GDD
   // Находим стадию, у которой GDD_Threshold <= введенному значению
   let currentPhenoPhase
   
   try {
-    // Проверяем подключение к БД
-    await prisma.$connect()
-    
     const phenologyStages = await prisma.phenology.findMany({
       where: {
         gddThresholdBase5: {
@@ -60,24 +63,45 @@ export async function calculateOrchardState(
       take: 1, // Берем только одну (самую подходящую)
     })
 
+    console.log('[Server Action] Найдено стадий для GDD', gdd, ':', phenologyStages.length)
+
     if (phenologyStages.length > 0) {
       currentPhenoPhase = phenologyStages[0]
+      console.log('[Server Action] Выбрана стадия:', currentPhenoPhase.stageNameRu, 'BBCH', currentPhenoPhase.bbchCode)
     } else {
-      // Если ничего не найдено (GDD < минимального порога), берем первую стадию
+      // Если ничего не найдено (GDD < минимального порога), берем первую стадию с минимальным порогом
       const firstStage = await prisma.phenology.findFirst({
+        where: {
+          gddThresholdBase5: {
+            lte: gdd, // Все равно ищем <= gdd, но если ничего нет, берем минимальную
+          },
+        },
         orderBy: {
           gddThresholdBase5: 'asc',
         },
       })
-      currentPhenoPhase = firstStage || {
-        bbchCode: 0,
-        stageNameRu: 'Период покоя',
-        gddThresholdBase5: 0,
-        description: 'GDD еще не накоплены',
+      
+      // Если все еще ничего не найдено, берем стадию с минимальным порогом (обычно 0)
+      if (!firstStage) {
+        const minStage = await prisma.phenology.findFirst({
+          orderBy: {
+            gddThresholdBase5: 'asc',
+          },
+        })
+        currentPhenoPhase = minStage || {
+          bbchCode: 0,
+          stageNameRu: 'Период покоя',
+          gddThresholdBase5: 0,
+          description: 'GDD еще не накоплены',
+        }
+      } else {
+        currentPhenoPhase = firstStage
       }
+      
+      console.log('[Server Action] Fallback стадия:', currentPhenoPhase.stageNameRu)
     }
   } catch (error) {
-    console.error('Ошибка при получении фенофазы из БД:', error)
+    console.error('[Server Action] Ошибка при получении фенофазы из БД:', error)
     // Fallback на дефолтное значение при ошибке
     currentPhenoPhase = {
       bbchCode: 0,
@@ -85,8 +109,6 @@ export async function calculateOrchardState(
       gddThresholdBase5: 0,
       description: error instanceof Error ? `Ошибка: ${error.message}` : 'Ошибка загрузки данных',
     }
-  } finally {
-    // Не закрываем соединение в server action, так как Prisma управляет пулом соединений
   }
 
   // 2. Определение риска болезней на основе влажности листа
