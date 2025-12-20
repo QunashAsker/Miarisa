@@ -40,9 +40,35 @@ export default function DemoPage() {
             windSpeed,
             codlingMothTraps,
           })
-          setSimulationResult(result)
+          if (result && result.phenoPhase) {
+            setSimulationResult(result)
+          } else {
+            throw new Error('Неверный формат ответа от сервера')
+          }
         } catch (error) {
           console.error('Ошибка расчета симуляции:', error)
+          // Устанавливаем fallback результат при ошибке
+          setSimulationResult({
+            phenoPhase: {
+              bbchCode: 0,
+              stageNameRu: 'Ошибка загрузки',
+              gddThreshold: 0,
+              description: 'Не удалось загрузить данные из БД',
+            },
+            diseaseRisk: {
+              level: 'Низкий',
+              reason: 'Не удалось рассчитать',
+            },
+            weatherWindow: {
+              status: 'Открыто',
+              reason: 'Не удалось рассчитать',
+            },
+            recommendations: [{
+              type: 'warning',
+              title: 'Ошибка',
+              message: 'Не удалось загрузить данные из базы данных. Проверьте подключение.',
+            }],
+          })
         } finally {
           setIsLoading(false)
         }
@@ -441,18 +467,16 @@ export default function DemoPage() {
                     <h2 className="text-lg font-semibold text-primary mb-4">Статус сада</h2>
                     {isLoading ? (
                       <div className="text-center py-4 text-primary/60">Расчет...</div>
-                    ) : (
+                    ) : simulationResult ? (
                       <div className="grid grid-cols-3 gap-3">
                         <div className="p-3 bg-background-grey rounded-lg border border-primary/5">
                           <div className="text-xs text-primary/60 mb-1">Фенофаза</div>
                           <div className="text-sm font-semibold text-primary">
-                            {simulationResult?.phenoPhase.stageNameRu || 'Загрузка...'}
+                            {simulationResult.phenoPhase.stageNameRu}
                           </div>
-                          {simulationResult && (
-                            <div className="text-xs text-primary/50 mt-1">
-                              BBCH {simulationResult.phenoPhase.bbchCode} • GDD ≥ {simulationResult.phenoPhase.gddThreshold}
-                            </div>
-                          )}
+                          <div className="text-xs text-primary/50 mt-1">
+                            BBCH {simulationResult.phenoPhase.bbchCode} • GDD ≥ {simulationResult.phenoPhase.gddThreshold}
+                          </div>
                         </div>
                         <div className={`p-3 rounded-lg border ${diseaseRisk.bg} ${diseaseRisk.border}`}>
                           <div className="text-xs text-primary/60 mb-1">Риск болезней</div>
@@ -462,6 +486,11 @@ export default function DemoPage() {
                           <div className="text-xs text-primary/60 mb-1">Погодное окно</div>
                           <div className={`text-sm font-semibold ${weatherWindow.color}`}>{weatherWindow.status}</div>
                         </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-primary/60 mb-2">Инициализация...</div>
+                        <div className="text-xs text-primary/40">Загрузка данных из базы</div>
                       </div>
                     )}
                   </div>
