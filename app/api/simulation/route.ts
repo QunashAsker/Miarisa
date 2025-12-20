@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { gdd, temperature, leafWetness, windSpeed, codlingMothTraps } = body
+    const { gdd, temperature, leafWetness, windSpeed, codlingMothTraps, soilMoisture } = body
 
-    console.log('[API Route] Получен запрос с GDD:', gdd)
+    console.log('[API Route] Получен запрос с GDD:', gdd, 'Влажность почвы:', soilMoisture)
 
     // 1. Определение фенофазы на основе GDD
     let currentPhenoPhase
@@ -102,6 +102,15 @@ export async function POST(request: NextRequest) {
         type: 'critical',
         title: 'Обработка от плодожорки',
         message: `Порог превышен (${codlingMothTraps} шт/неделю). Рекомендуется инсектицид.`,
+      })
+    }
+
+    // Логика полива на основе влажности почвы
+    if (soilMoisture !== undefined && soilMoisture < 60) {
+      recommendations.push({
+        type: 'critical',
+        title: 'Полив + Фертигация',
+        message: `Влажность почвы критически низкая (${soilMoisture}%). Требуется срочный полив с внесением удобрений. Рекомендуется кальциевая селитра для улучшения качества плодов.`,
       })
     }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, ArrowRight, Apple, Sliders, Thermometer, Droplet, Wind, Bug, CheckCircle2, AlertTriangle, XCircle, TrendingUp } from 'lucide-react'
+import { Lock, ArrowRight, Apple, Sliders, Thermometer, Droplet, Wind, Bug, CheckCircle2, AlertTriangle, XCircle, TrendingUp, Snowflake, Sprout, Flower, CloudRain } from 'lucide-react'
 import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
 import type { SimulationResult } from '@/app/actions/simulation'
@@ -19,6 +19,7 @@ export default function DemoPage() {
   const [leafWetness, setLeafWetness] = useState(8)
   const [windSpeed, setWindSpeed] = useState(2)
   const [codlingMothTraps, setCodlingMothTraps] = useState(0)
+  const [soilMoisture, setSoilMoisture] = useState(70) // Влажность почвы (%)
   
   // Состояние для результатов симуляции
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
@@ -47,6 +48,7 @@ export default function DemoPage() {
               leafWetness,
               windSpeed,
               codlingMothTraps,
+              soilMoisture,
             }),
           })
 
@@ -96,7 +98,7 @@ export default function DemoPage() {
       const timeoutId = setTimeout(fetchSimulation, 150)
       return () => clearTimeout(timeoutId)
     }
-  }, [step, gdd, temperature, leafWetness, windSpeed, codlingMothTraps])
+  }, [step, gdd, temperature, leafWetness, windSpeed, codlingMothTraps, soilMoisture])
 
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,6 +140,76 @@ export default function DemoPage() {
 
   const diseaseRisk = getDiseaseRiskStyles()
   const weatherWindow = getWeatherWindowStyles()
+
+  // Функция для получения иконки фенофазы на основе GDD
+  const getPhenoPhaseIcon = () => {
+    if (gdd === 0 || !simulationResult) {
+      return <Snowflake className="w-16 h-16 text-primary/40" />
+    }
+    const currentGdd = gdd
+    if (currentGdd < 50) {
+      return <Snowflake className="w-16 h-16 text-blue-400" />
+    } else if (currentGdd < 150) {
+      return <Sprout className="w-16 h-16 text-green-500" />
+    } else if (currentGdd < 250) {
+      return <Flower className="w-16 h-16 text-pink-400" />
+    } else if (currentGdd < 1000) {
+      return <Apple className="w-16 h-16 text-green-600" />
+    } else {
+      return <Apple className="w-16 h-16 text-red-500" />
+    }
+  }
+
+  // Генерация логики принятия решений ИИ
+  const generateAIReasoning = () => {
+    const reasoning: string[] = []
+    
+    if (simulationResult) {
+      // Анализ температуры и влажности для риска болезней
+      if (simulationResult.diseaseRisk.level === 'Высокий') {
+        reasoning.push(`🌡 Temp ${temperature}°C + 💧 Wetness ${leafWetness}h = High Risk (Mills Table)`)
+      } else if (simulationResult.diseaseRisk.level === 'Средний') {
+        reasoning.push(`🌡 Temp ${temperature}°C + 💧 Wetness ${leafWetness}h = Medium Risk`)
+      } else {
+        reasoning.push(`🌡 Temp ${temperature}°C + 💧 Wetness ${leafWetness}h = Low Risk`)
+      }
+
+      // Анализ ветра
+      if (windSpeed > 5) {
+        reasoning.push(`💨 Wind ${windSpeed} m/s = Warning threshold reached (>5 m/s)`)
+      } else {
+        reasoning.push(`💨 Wind ${windSpeed} m/s = Safe for spraying`)
+      }
+
+      // Анализ температуры для погодного окна
+      if (temperature < 10) {
+        reasoning.push(`❄️ Temp ${temperature}°C < 10°C = Too cold for effective treatment`)
+      } else if (temperature > 25) {
+        reasoning.push(`🔥 Temp ${temperature}°C > 25°C = Risk of leaf burn`)
+      } else {
+        reasoning.push(`✅ Temp ${temperature}°C = Optimal range (10-25°C)`)
+      }
+
+      // Анализ GDD и фенофазы
+      if (simulationResult.phenoPhase) {
+        reasoning.push(`📊 GDD ${gdd} → Stage: ${simulationResult.phenoPhase.stageNameRu} (BBCH ${simulationResult.phenoPhase.bbchCode})`)
+      }
+
+      // Анализ плодожорки
+      if (codlingMothTraps > 5) {
+        reasoning.push(`🐛 Codling moth traps: ${codlingMothTraps} pcs/week = Threshold exceeded`)
+      }
+
+      // Анализ влажности почвы
+      if (soilMoisture < 60) {
+        reasoning.push(`💧 Soil moisture ${soilMoisture}% < 60% = Critical irrigation needed`)
+      } else {
+        reasoning.push(`💧 Soil moisture ${soilMoisture}% = Adequate`)
+      }
+    }
+
+    return reasoning
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -454,6 +526,42 @@ export default function DemoPage() {
                       </div>
                     </div>
 
+                    {/* Слайдер 5: Влажность почвы */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <CloudRain className="w-4 h-4 text-primary/60" />
+                          <label className="text-sm font-medium text-primary">Влажность почвы</label>
+                        </div>
+                        <span className={`text-sm font-bold ${soilMoisture < 60 ? 'text-accent-red' : 'text-primary'}`}>
+                          {soilMoisture}%
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={soilMoisture}
+                          onChange={(e) => setSoilMoisture(Number(e.target.value))}
+                          className="w-full h-2 bg-primary/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                          style={{
+                            background: soilMoisture < 60 
+                              ? `linear-gradient(to right, #dc2626 0%, #dc2626 ${(soilMoisture / 100) * 100}%, #e5e7eb ${(soilMoisture / 100) * 100}%, #e5e7eb 100%)`
+                              : undefined
+                          }}
+                        />
+                        {soilMoisture < 60 && (
+                          <div className="absolute top-0 left-0 w-[60%] h-2 bg-accent-red/30 pointer-events-none"></div>
+                        )}
+                      </div>
+                      <div className="flex justify-between text-xs text-primary/40 mt-1">
+                        <span>0%</span>
+                        <span className={soilMoisture < 60 ? 'text-accent-red font-semibold' : ''}>60% (критично)</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+
                     {/* Инпут: Ловушка плодожорки */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
@@ -497,16 +605,26 @@ export default function DemoPage() {
                     {isLoading ? (
                       <div className="text-center py-4 text-primary/60">Расчет...</div>
                     ) : simulationResult ? (
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="p-3 bg-background-grey rounded-lg border border-primary/5">
-                          <div className="text-xs text-primary/60 mb-1">Фенофаза</div>
-                          <div className="text-sm font-semibold text-primary">
-                            {simulationResult.phenoPhase.stageNameRu}
-                          </div>
-                          <div className="text-xs text-primary/50 mt-1">
-                            BBCH {simulationResult.phenoPhase.bbchCode} • GDD ≥ {simulationResult.phenoPhase.gddThreshold}
+                      <div className="space-y-4">
+                        {/* Блок фенофазы с иконкой */}
+                        <div className="p-4 bg-background-grey rounded-lg border border-primary/5">
+                          <div className="flex items-center gap-4">
+                            <div className="flex-shrink-0">
+                              {getPhenoPhaseIcon()}
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-xs text-primary/60 mb-1">Фенофаза</div>
+                              <div className="text-sm font-semibold text-primary">
+                                {simulationResult.phenoPhase.stageNameRu}
+                              </div>
+                              <div className="text-xs text-primary/50 mt-1">
+                                BBCH {simulationResult.phenoPhase.bbchCode} • GDD ≥ {simulationResult.phenoPhase.gddThreshold}
+                              </div>
+                            </div>
                           </div>
                         </div>
+                        {/* Остальные статусы */}
+                        <div className="grid grid-cols-2 gap-3">
                         <div className={`p-3 rounded-lg border ${diseaseRisk.bg} ${diseaseRisk.border}`}>
                           <div className="text-xs text-primary/60 mb-1">Риск болезней</div>
                           <div className={`text-sm font-semibold ${diseaseRisk.color}`}>{diseaseRisk.level}</div>
@@ -514,6 +632,7 @@ export default function DemoPage() {
                         <div className={`p-3 rounded-lg border ${weatherWindow.bg} ${weatherWindow.border}`}>
                           <div className="text-xs text-primary/60 mb-1">Погодное окно</div>
                           <div className={`text-sm font-semibold ${weatherWindow.color}`}>{weatherWindow.status}</div>
+                        </div>
                         </div>
                       </div>
                     ) : (
@@ -560,6 +679,24 @@ export default function DemoPage() {
                         <div className="text-sm text-primary/60">Задач нет. Система работает в штатном режиме.</div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Блок: Логика принятия решения (AI Reasoning) */}
+                  <div className="glassmorphism rounded-2xl p-6 shadow-xl border border-white/30 backdrop-blur-xl bg-white/90">
+                    <h2 className="text-lg font-semibold text-primary mb-4">Логика принятия решения</h2>
+                    <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-y-auto max-h-64">
+                      <div className="space-y-2">
+                        {isLoading ? (
+                          <div className="text-green-400">$ Загрузка данных...</div>
+                        ) : (
+                          generateAIReasoning().map((line, index) => (
+                            <div key={index} className="text-green-400">
+                              <span className="text-gray-500">[{new Date().toLocaleTimeString()}]</span> {line}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               </div>
