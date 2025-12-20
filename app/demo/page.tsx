@@ -27,21 +27,37 @@ export default function DemoPage() {
   // Расчет потребности в азоте (упрощенная формула)
   const nitrogenRequirement = Math.round(targetYield * 0.6)
 
-  // Вызов серверного экшена при изменении параметров
+  // Вызов API при изменении параметров
   useEffect(() => {
     if (step === 'dashboard') {
       const fetchSimulation = async () => {
         setIsLoading(true)
         try {
-          console.log('Вызов calculateOrchardState с параметрами:', { gdd, temperature, leafWetness, windSpeed, codlingMothTraps })
-          const result = await calculateOrchardState({
-            gdd,
-            temperature,
-            leafWetness,
-            windSpeed,
-            codlingMothTraps,
+          console.log('Вызов API с параметрами:', { gdd, temperature, leafWetness, windSpeed, codlingMothTraps })
+          
+          // Используем API route вместо server action для более надежной работы
+          const response = await fetch('/api/simulation', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              gdd,
+              temperature,
+              leafWetness,
+              windSpeed,
+              codlingMothTraps,
+            }),
           })
-          console.log('Получен результат от сервера:', result)
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.message || 'Ошибка сервера')
+          }
+
+          const result = await response.json()
+          console.log('Получен результат от API:', result)
+          
           if (result && result.phenoPhase) {
             setSimulationResult(result)
           } else {
