@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, ArrowRight, Apple, Sliders, Thermometer, Droplet, Wind, Bug, CheckCircle2, AlertTriangle, XCircle, TrendingUp } from 'lucide-react'
 import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
-import { calculateOrchardState, type SimulationResult } from '@/app/actions/simulation'
+import type { SimulationResult } from '@/app/actions/simulation'
 
 type Step = 'auth' | 'onboarding' | 'dashboard'
 
