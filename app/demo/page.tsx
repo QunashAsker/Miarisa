@@ -167,44 +167,46 @@ export default function DemoPage() {
     if (simulationResult) {
       // Анализ температуры и влажности для риска болезней
       if (simulationResult.diseaseRisk.level === 'Высокий') {
-        reasoning.push(`🌡 Temp ${temperature}°C + 💧 Wetness ${leafWetness}h = High Risk (Mills Table)`)
+        reasoning.push(`🌡 Температура ${temperature}°C + 💧 Влажность листа ${leafWetness}ч = Высокий риск (Таблица Миллса)`)
       } else if (simulationResult.diseaseRisk.level === 'Средний') {
-        reasoning.push(`🌡 Temp ${temperature}°C + 💧 Wetness ${leafWetness}h = Medium Risk`)
+        reasoning.push(`🌡 Температура ${temperature}°C + 💧 Влажность листа ${leafWetness}ч = Средний риск`)
       } else {
-        reasoning.push(`🌡 Temp ${temperature}°C + 💧 Wetness ${leafWetness}h = Low Risk`)
+        reasoning.push(`🌡 Температура ${temperature}°C + 💧 Влажность листа ${leafWetness}ч = Низкий риск`)
       }
 
       // Анализ ветра
       if (windSpeed > 5) {
-        reasoning.push(`💨 Wind ${windSpeed} m/s = Warning threshold reached (>5 m/s)`)
+        reasoning.push(`💨 Ветер ${windSpeed} м/с = Порог предупреждения превышен (>5 м/с)`)
       } else {
-        reasoning.push(`💨 Wind ${windSpeed} m/s = Safe for spraying`)
+        reasoning.push(`💨 Ветер ${windSpeed} м/с = Безопасно для опрыскивания`)
       }
 
       // Анализ температуры для погодного окна
       if (temperature < 10) {
-        reasoning.push(`❄️ Temp ${temperature}°C < 10°C = Too cold for effective treatment`)
+        reasoning.push(`❄️ Температура ${temperature}°C < 10°C = Слишком холодно для эффективной обработки`)
       } else if (temperature > 25) {
-        reasoning.push(`🔥 Temp ${temperature}°C > 25°C = Risk of leaf burn`)
+        reasoning.push(`🔥 Температура ${temperature}°C > 25°C = Риск ожога листьев`)
       } else {
-        reasoning.push(`✅ Temp ${temperature}°C = Optimal range (10-25°C)`)
+        reasoning.push(`✅ Температура ${temperature}°C = Оптимальный диапазон (10-25°C)`)
       }
 
       // Анализ GDD и фенофазы
       if (simulationResult.phenoPhase) {
-        reasoning.push(`📊 GDD ${gdd} → Stage: ${simulationResult.phenoPhase.stageNameRu} (BBCH ${simulationResult.phenoPhase.bbchCode})`)
+        reasoning.push(`📊 GDD ${gdd} → Стадия: ${simulationResult.phenoPhase.stageNameRu} (BBCH ${simulationResult.phenoPhase.bbchCode})`)
       }
 
       // Анализ плодожорки
       if (codlingMothTraps > 5) {
-        reasoning.push(`🐛 Codling moth traps: ${codlingMothTraps} pcs/week = Threshold exceeded`)
+        reasoning.push(`🐛 Ловушки плодожорки: ${codlingMothTraps} шт/неделю = Порог превышен`)
+      } else {
+        reasoning.push(`🐛 Ловушки плодожорки: ${codlingMothTraps} шт/неделю = В пределах нормы`)
       }
 
       // Анализ влажности почвы
       if (soilMoisture < 60) {
-        reasoning.push(`💧 Soil moisture ${soilMoisture}% < 60% = Critical irrigation needed`)
+        reasoning.push(`💧 Влажность почвы ${soilMoisture}% < 60% = Требуется критический полив`)
       } else {
-        reasoning.push(`💧 Soil moisture ${soilMoisture}% = Adequate`)
+        reasoning.push(`💧 Влажность почвы ${soilMoisture}% = Достаточная`)
       }
     }
 
