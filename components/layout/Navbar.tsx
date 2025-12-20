@@ -45,9 +45,11 @@ export default function Navbar() {
           </div>
           
           <div className="hidden md:block">
-            <Button variant="primary" size="default" onClick={() => setDemoModalOpen(true)}>
-              Запросить демо
-            </Button>
+            <Link href="/demo">
+              <Button variant="primary" size="default">
+                Запросить демо
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -81,12 +83,11 @@ export default function Navbar() {
                     {item.label}
                   </Link>
                 ))}
-                <Button variant="primary" size="default" className="w-full" onClick={() => {
-                  setDemoModalOpen(true)
-                  setMobileMenuOpen(false)
-                }}>
-                  Запросить демо
-                </Button>
+                <Link href="/demo" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                  <Button variant="primary" size="default" className="w-full">
+                    Запросить демо
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           )}

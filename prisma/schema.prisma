@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Словарь - справочник сущностей (болезни, вредители и т.д.)
+model Dictionary {
+  id             Int     @id @default(autoincrement())
+  entityType     String  @map("entity_type") // Disease, Pest, etc.
+  code           String  @unique // APPLE_SCAB, POWDERY_MILDEW, etc.
+  nameRu         String  @map("name_ru")
+  scientificName String? @map("scientific_name")
+  notes          String?
+
+  @@map("dictionary")
+}
+
+// 2. Фенология - стадии развития по BBCH
+model Phenology {
+  id                Int     @id @default(autoincrement())
+  bbchCode          Int     @unique @map("bbch_code")
+  stageNameRu       String  @map("stage_name_ru")
+  gddThresholdBase5 Int     @map("gdd_threshold_base5")
+  description       String?
+  imageLink         String? @map("image_link")
+  sourceUrl         String? @map("source_url")
+
+  @@map("phenology")
+}
+
+// 3. Болезни - модели заражения (таблица Миллса и др.)
+model Disease {
+  id                        Int     @id @default(autoincrement())
+  diseaseCode               String  @map("disease_code") // APPLE_SCAB, etc.
+  model                     String  // Mills (primary infection), etc.
+  tempF                     Int?    @map("temp_f")
+  tempC                     Float?  @map("temp_c")
+  leafWetnessHoursLight     Int?    @map("leaf_wetness_hours_light")
+  leafWetnessHoursModerate  Int?    @map("leaf_wetness_hours_moderate")
+  leafWetnessHoursSevere    Int?    @map("leaf_wetness_hours_severe")
+  notes                     String?
+  sourceUrl                 String? @map("source_url")
+
+  @@map("diseases")
+}
+
+// 4. Питание - параметры питания и удобрений
+// Эта таблица имеет сложную структуру, создадим как key-value хранилище
+model Nutrition {
+  id          Int     @id @default(autoincrement())
+  parameter   String  // Планируемая урожайность, Площадь, etc.
+  value       String? // Может быть числом или текстом
+  unit        String?
+  category    String? // Для группировки параметров
+  notes       String?
+  sourceUrl   String? @map("source_url")
+
+  @@map("nutrition")
+}
+
+// 5. Препараты - справочник пестицидов и удобрений
+model Pesticide {
+  id                Int     @id @default(autoincrement())
+  tradeName         String  @map("trade_name")
+  activeIngredient  String  @map("active_ingredient")
+  targetPestCodes   String  @map("target_pest_codes") // APPLE_SCAB,POWDERY_MILDEW
+  dosageMinLHa     Float?  @map("dosage_min_l_ha")
+  dosageMaxLHa      Float?  @map("dosage_max_l_ha")
+  dosageUnit        String  @map("dosage_unit") // L/ha, kg/ha
+  minTempC          Int?    @map("min_temp_c")
+  maxTempC          Int?    @map("max_temp_c")
+  rainfastnessHours Int?    @map("rainfastness_hours")
+  actionType        String  @map("action_type") // Preventive, Curative
+  phiDays           Int?    @map("phi_days") // Pre-harvest interval
+  fracIrac          String? @map("frac_irac") // FRAC 3, etc.
+  chemGroupCode     String? @map("chem_group_code") // DMI, QoI, etc.
+  notes             String?
+  sourceUrl         String? @map("source_url")
+
+  @@map("pesticides")
+}
+
+// 6. Погода - параметры погодных условий для опрыскивания
+model WeatherParameter {
+  id          Int     @id @default(autoincrement())
+  parameter   String  @unique // Wind_Max_Speed, Min_Temp_Spray, etc.
+  value       String  // Может быть числом или строкой (например, время "05:00")
+  unit        String  // m/s, °C, local, etc.
+  description String?
+  sourceUrl   String? @map("source_url")
+
+  @@map("weather_parameters")
+}
+
+// 7. Совместимость - матрица совместимости химических групп
+model Compatibility {
+  id              Int     @id @default(autoincrement())
+  chemGroup1     String  @map("chem_group_1") // COPPER, SULFUR, etc.
+  chemGroup2     String  @map("chem_group_2")
+  compatibility  String  // OK, CAUTION, NO
+
+  @@unique([chemGroup1, chemGroup2])
+  @@map("compatibility")
+}
+
+// 8. ЧП_Протоколы - протоколы экстренных мер (emergency protocols)
+model EmergencyProtocol {
+  id                    Int     @id @default(autoincrement())
+  ruleId                String  @unique @map("rule_id") // EMG_CM_01, etc.
+  triggerType           String  @map("trigger_type") // Pest, Disease, etc.
+  entityCode            String  @map("entity_code") // CODLING_MOTH, APHID, etc.
+  metric                String  // Trap_Catch_per_Trap_per_Week, etc.
+  threshold             String  // Может быть числом или строкой
+  window                String  // 7d, 3d, etc.
+  ifYesAction           String  @map("if_yes_action")
+  ifNoAction            String  @map("if_no_action")
+  constraints           String?
+  linkToPesticidesDb    String? @map("link_to_pesticides_db")
+  notes                 String?
+  sourceUrl             String? @map("source_url")
+
+  @@map("emergency_protocols")
+}
