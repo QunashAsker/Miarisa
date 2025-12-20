@@ -11,6 +11,9 @@ export default defineConfig({
   },
   engine: "classic",
   datasource: {
-    url: env("DATABASE_URL"),
+    // Для генерации Prisma Client не требуется реальное подключение к БД
+    // Используем фиктивный URL если DATABASE_URL не установлен (например, при npm ci)
+    // Реальное подключение будет использоваться из .env во время выполнения
+    url: process.env.DATABASE_URL || "postgresql://user:password@localhost:5432/db",
   },
 });
