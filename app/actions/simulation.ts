@@ -45,6 +45,9 @@ export async function calculateOrchardState(
   let currentPhenoPhase
   
   try {
+    // Проверяем подключение к БД
+    await prisma.$connect()
+    
     const phenologyStages = await prisma.phenology.findMany({
       where: {
         gddThresholdBase5: {
@@ -80,8 +83,10 @@ export async function calculateOrchardState(
       bbchCode: 0,
       stageNameRu: 'Период покоя',
       gddThresholdBase5: 0,
-      description: 'Ошибка загрузки данных',
+      description: error instanceof Error ? `Ошибка: ${error.message}` : 'Ошибка загрузки данных',
     }
+  } finally {
+    // Не закрываем соединение в server action, так как Prisma управляет пулом соединений
   }
 
   // 2. Определение риска болезней на основе влажности листа
