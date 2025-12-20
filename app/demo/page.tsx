@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, ArrowRight, Apple, Sliders, Calendar, Thermometer, Droplet, Wind, Bug, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react'
+import { Lock, ArrowRight, Apple, Sliders, Thermometer, Droplet, Wind, Bug, CheckCircle2, AlertTriangle, XCircle, TrendingUp } from 'lucide-react'
 import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
+import { calculateOrchardState, type SimulationResult } from '@/app/actions/simulation'
 
 type Step = 'auth' | 'onboarding' | 'dashboard'
 
@@ -13,44 +14,45 @@ export default function DemoPage() {
   const [password, setPassword] = useState('')
   const [selectedCrop, setSelectedCrop] = useState('Яблоня Гала')
   const [targetYield, setTargetYield] = useState(40)
-  const [date, setDate] = useState(120) // Дни от начала года (примерно апрель)
+  const [gdd, setGdd] = useState(0) // Накопленные градусо-дни (Base 5°C)
   const [temperature, setTemperature] = useState(22)
   const [leafWetness, setLeafWetness] = useState(8)
   const [windSpeed, setWindSpeed] = useState(2)
   const [codlingMothTraps, setCodlingMothTraps] = useState(0)
+  
+  // Состояние для результатов симуляции
+  const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Расчет потребности в азоте (упрощенная формула)
   const nitrogenRequirement = Math.round(targetYield * 0.6)
 
-  // Определение фенофазы на основе даты
-  const getPhenoPhase = () => {
-    if (date < 50) return 'Период покоя'
-    if (date < 70) return 'Набухание почек'
-    if (date < 100) return 'Зелёный конус'
-    if (date < 130) return 'Розовый бутон'
-    if (date < 160) return 'Цветение'
-    if (date < 200) return 'Завязывание плодов'
-    if (date < 250) return 'Рост плодов'
-    return 'Созревание'
-  }
-
-  // Определение риска болезней
-  const getDiseaseRisk = () => {
-    if (leafWetness > 10) return { level: 'Высокий', color: 'text-accent-red', bg: 'bg-accent-red/10', border: 'border-accent-red/30' }
-    if (leafWetness > 5) return { level: 'Средний', color: 'text-accent-amber', bg: 'bg-accent-amber/10', border: 'border-accent-amber/30' }
-    return { level: 'Низкий', color: 'text-accent-green', bg: 'bg-accent-green/10', border: 'border-accent-green/30' }
-  }
-
-  // Определение погодного окна
-  const getWeatherWindow = () => {
-    if (windSpeed > 5 || temperature < 10 || temperature > 25) {
-      return { status: 'Закрыто', color: 'text-accent-red', bg: 'bg-accent-red/10', border: 'border-accent-red/30' }
+  // Вызов серверного экшена при изменении параметров
+  useEffect(() => {
+    if (step === 'dashboard') {
+      const fetchSimulation = async () => {
+        setIsLoading(true)
+        try {
+          const result = await calculateOrchardState({
+            gdd,
+            temperature,
+            leafWetness,
+            windSpeed,
+            codlingMothTraps,
+          })
+          setSimulationResult(result)
+        } catch (error) {
+          console.error('Ошибка расчета симуляции:', error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+      
+      // Дебаунс для избежания частых запросов
+      const timeoutId = setTimeout(fetchSimulation, 300)
+      return () => clearTimeout(timeoutId)
     }
-    return { status: 'Открыто', color: 'text-accent-green', bg: 'bg-accent-green/10', border: 'border-accent-green/30' }
-  }
-
-  const diseaseRisk = getDiseaseRisk()
-  const weatherWindow = getWeatherWindow()
+  }, [step, gdd, temperature, leafWetness, windSpeed, codlingMothTraps])
 
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,11 +63,35 @@ export default function DemoPage() {
     setStep('dashboard')
   }
 
-  const getDateLabel = (days: number) => {
-    const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-    const monthIndex = Math.floor((days / 365) * 12)
-    return months[Math.min(monthIndex, 8)] // До сентября
+  // Получение стилей для риска болезней
+  const getDiseaseRiskStyles = () => {
+    if (!simulationResult) {
+      return { level: 'Низкий', color: 'text-accent-green', bg: 'bg-accent-green/10', border: 'border-accent-green/30' }
+    }
+    const level = simulationResult.diseaseRisk.level
+    if (level === 'Высокий') {
+      return { level, color: 'text-accent-red', bg: 'bg-accent-red/10', border: 'border-accent-red/30' }
+    }
+    if (level === 'Средний') {
+      return { level, color: 'text-accent-amber', bg: 'bg-accent-amber/10', border: 'border-accent-amber/30' }
+    }
+    return { level, color: 'text-accent-green', bg: 'bg-accent-green/10', border: 'border-accent-green/30' }
   }
+
+  // Получение стилей для погодного окна
+  const getWeatherWindowStyles = () => {
+    if (!simulationResult) {
+      return { status: 'Открыто', color: 'text-accent-green', bg: 'bg-accent-green/10', border: 'border-accent-green/30' }
+    }
+    const status = simulationResult.weatherWindow.status
+    if (status === 'Закрыто') {
+      return { status, color: 'text-accent-red', bg: 'bg-accent-red/10', border: 'border-accent-red/30' }
+    }
+    return { status, color: 'text-accent-green', bg: 'bg-accent-green/10', border: 'border-accent-green/30' }
+  }
+
+  const diseaseRisk = getDiseaseRiskStyles()
+  const weatherWindow = getWeatherWindowStyles()
 
   return (
     <main className="min-h-screen bg-background">
@@ -254,27 +280,30 @@ export default function DemoPage() {
                   </div>
 
                   <div className="space-y-6">
-                    {/* Слайдер 1: Дата */}
+                    {/* Слайдер 1: Накопленные GDD */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-primary/60" />
-                          <label className="text-sm font-medium text-primary">Дата</label>
+                          <TrendingUp className="w-4 h-4 text-primary/60" />
+                          <label className="text-sm font-medium text-primary">Накопленные GDD (Base 5°C)</label>
                         </div>
-                        <span className="text-sm font-bold text-primary">{getDateLabel(date)}</span>
+                        <span className="text-sm font-bold text-primary">{gdd}</span>
                       </div>
                       <input
                         type="range"
                         min="0"
-                        max="250"
-                        value={date}
-                        onChange={(e) => setDate(Number(e.target.value))}
+                        max="2500"
+                        value={gdd}
+                        onChange={(e) => setGdd(Number(e.target.value))}
                         className="w-full h-2 bg-primary/10 rounded-lg appearance-none cursor-pointer accent-primary"
                       />
                       <div className="flex justify-between text-xs text-primary/40 mt-1">
-                        <span>Апрель</span>
-                        <span>Сентябрь</span>
+                        <span>0</span>
+                        <span>2500</span>
                       </div>
+                      <p className="text-xs text-primary/50 mt-2">
+                        Сумма активных температур с начала сезона (базовая температура 5°C)
+                      </p>
                     </div>
 
                     {/* Слайдер 2: Температура */}
@@ -298,6 +327,9 @@ export default function DemoPage() {
                         <span>-5°C</span>
                         <span>+35°C</span>
                       </div>
+                      <p className="text-xs text-primary/50 mt-2">
+                        Используется для расчета риска болезней и эффективности препаратов
+                      </p>
                     </div>
 
                     {/* Слайдер 3: Влажность листа */}
@@ -407,60 +439,61 @@ export default function DemoPage() {
                   {/* Верхний блок: Статус сада */}
                   <div className="glassmorphism rounded-2xl p-6 shadow-xl border border-white/30 backdrop-blur-xl bg-white/90">
                     <h2 className="text-lg font-semibold text-primary mb-4">Статус сада</h2>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="p-3 bg-background-grey rounded-lg border border-primary/5">
-                        <div className="text-xs text-primary/60 mb-1">Фенофаза</div>
-                        <div className="text-sm font-semibold text-primary">{getPhenoPhase()}</div>
+                    {isLoading ? (
+                      <div className="text-center py-4 text-primary/60">Расчет...</div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="p-3 bg-background-grey rounded-lg border border-primary/5">
+                          <div className="text-xs text-primary/60 mb-1">Фенофаза</div>
+                          <div className="text-sm font-semibold text-primary">
+                            {simulationResult?.phenoPhase.stageNameRu || 'Загрузка...'}
+                          </div>
+                          {simulationResult && (
+                            <div className="text-xs text-primary/50 mt-1">
+                              BBCH {simulationResult.phenoPhase.bbchCode} • GDD ≥ {simulationResult.phenoPhase.gddThreshold}
+                            </div>
+                          )}
+                        </div>
+                        <div className={`p-3 rounded-lg border ${diseaseRisk.bg} ${diseaseRisk.border}`}>
+                          <div className="text-xs text-primary/60 mb-1">Риск болезней</div>
+                          <div className={`text-sm font-semibold ${diseaseRisk.color}`}>{diseaseRisk.level}</div>
+                        </div>
+                        <div className={`p-3 rounded-lg border ${weatherWindow.bg} ${weatherWindow.border}`}>
+                          <div className="text-xs text-primary/60 mb-1">Погодное окно</div>
+                          <div className={`text-sm font-semibold ${weatherWindow.color}`}>{weatherWindow.status}</div>
+                        </div>
                       </div>
-                      <div className={`p-3 rounded-lg border ${diseaseRisk.bg} ${diseaseRisk.border}`}>
-                        <div className="text-xs text-primary/60 mb-1">Риск болезней</div>
-                        <div className={`text-sm font-semibold ${diseaseRisk.color}`}>{diseaseRisk.level}</div>
-                      </div>
-                      <div className={`p-3 rounded-lg border ${weatherWindow.bg} ${weatherWindow.border}`}>
-                        <div className="text-xs text-primary/60 mb-1">Погодное окно</div>
-                        <div className={`text-sm font-semibold ${weatherWindow.color}`}>{weatherWindow.status}</div>
-                      </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Центральный блок: Техкарта */}
                   <div className="glassmorphism rounded-2xl p-6 shadow-xl border border-white/30 backdrop-blur-xl bg-white/90">
                     <h2 className="text-lg font-semibold text-primary mb-4">Техкарта</h2>
-                    {leafWetness > 10 || windSpeed > 5 || codlingMothTraps > 5 ? (
+                    {isLoading ? (
+                      <div className="text-center py-8 text-primary/60">Расчет рекомендаций...</div>
+                    ) : simulationResult && simulationResult.recommendations.length > 0 ? (
                       <div className="space-y-3">
-                        {leafWetness > 10 && (
-                          <div className="p-4 bg-accent-red/10 border border-accent-red/30 rounded-lg">
-                            <div className="flex items-start gap-3">
-                              <AlertTriangle className="w-5 h-5 text-accent-red mt-0.5" />
-                              <div className="flex-1">
-                                <div className="font-semibold text-accent-red mb-1">Защита от парши</div>
-                                <div className="text-sm text-primary/70">Высокая влажность листа ({leafWetness} ч). Рекомендуется обработка фунгицидом.</div>
+                        {simulationResult.recommendations.map((rec, index) => {
+                          const Icon = rec.type === 'critical' ? AlertTriangle : rec.type === 'warning' ? XCircle : CheckCircle2
+                          const bgColor = rec.type === 'critical' ? 'bg-accent-red/10 border-accent-red/30' 
+                            : rec.type === 'warning' ? 'bg-accent-amber/10 border-accent-amber/30'
+                            : 'bg-accent-green/10 border-accent-green/30'
+                          const textColor = rec.type === 'critical' ? 'text-accent-red'
+                            : rec.type === 'warning' ? 'text-accent-amber'
+                            : 'text-accent-green'
+                          
+                          return (
+                            <div key={index} className={`p-4 ${bgColor} border rounded-lg`}>
+                              <div className="flex items-start gap-3">
+                                <Icon className={`w-5 h-5 ${textColor} mt-0.5`} />
+                                <div className="flex-1">
+                                  <div className={`font-semibold ${textColor} mb-1`}>{rec.title}</div>
+                                  <div className="text-sm text-primary/70">{rec.message}</div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
-                        {windSpeed > 5 && (
-                          <div className="p-4 bg-accent-red/10 border border-accent-red/30 rounded-lg">
-                            <div className="flex items-start gap-3">
-                              <XCircle className="w-5 h-5 text-accent-red mt-0.5" />
-                              <div className="flex-1">
-                                <div className="font-semibold text-accent-red mb-1">Опрыскивание запрещено</div>
-                                <div className="text-sm text-primary/70">Скорость ветра превышает безопасный порог ({windSpeed} м/с).</div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        {codlingMothTraps > 5 && (
-                          <div className="p-4 bg-accent-amber/10 border border-accent-amber/30 rounded-lg">
-                            <div className="flex items-start gap-3">
-                              <Bug className="w-5 h-5 text-accent-amber mt-0.5" />
-                              <div className="flex-1">
-                                <div className="font-semibold text-accent-amber mb-1">Обработка от плодожорки</div>
-                                <div className="text-sm text-primary/70">Порог превышен ({codlingMothTraps} шт/неделю). Рекомендуется инсектицид.</div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                          )
+                        })}
                       </div>
                     ) : (
                       <div className="p-8 text-center">
