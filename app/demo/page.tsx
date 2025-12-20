@@ -89,6 +89,8 @@ export default function DemoPage() {
 
   const handleOnboardingComplete = () => {
     setStep('dashboard')
+    // Сбрасываем результат при переходе на дашборд, чтобы загрузить свежие данные
+    setSimulationResult(null)
   }
 
   // Получение стилей для риска болезней
