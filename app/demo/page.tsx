@@ -324,7 +324,11 @@ export default function DemoPage() {
                         min="0"
                         max="2500"
                         value={gdd}
-                        onChange={(e) => setGdd(Number(e.target.value))}
+                        onChange={(e) => {
+                          const newGdd = Number(e.target.value)
+                          console.log('GDD изменен на:', newGdd)
+                          setGdd(newGdd)
+                        }}
                         className="w-full h-2 bg-primary/10 rounded-lg appearance-none cursor-pointer accent-primary"
                       />
                       <div className="flex justify-between text-xs text-primary/40 mt-1">
@@ -334,6 +338,11 @@ export default function DemoPage() {
                       <p className="text-xs text-primary/50 mt-2">
                         Сумма активных температур с начала сезона (базовая температура 5°C)
                       </p>
+                      {simulationResult && (
+                        <p className="text-xs text-accent-teal mt-1">
+                          Текущая стадия: {simulationResult.phenoPhase.stageNameRu} (GDD ≥ {simulationResult.phenoPhase.gddThreshold})
+                        </p>
+                      )}
                     </div>
 
                     {/* Слайдер 2: Температура */}
