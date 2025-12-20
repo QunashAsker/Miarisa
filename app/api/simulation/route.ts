@@ -132,10 +132,28 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('[API Route] Ошибка:', error)
+    
+    const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка'
+    
+    // Проверяем специфичную ошибку DATABASE_URL
+    if (errorMessage.includes('DATABASE_URL') || errorMessage.includes('Environment variable not found')) {
+      console.error('[API Route] DATABASE_URL не настроена в Railway!')
+      console.error('Инструкция: Добавьте в Railway Variables переменную DATABASE_URL')
+      
+      return NextResponse.json(
+        {
+          error: 'База данных не подключена',
+          message: 'DATABASE_URL не настроена в Railway. Добавьте переменную в настройках сервиса.',
+          instructions: 'Railway → Variables → Добавить: DATABASE_URL = ${{Postgres.DATABASE_URL}}',
+        },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       {
         error: 'Ошибка при расчете симуляции',
-        message: error instanceof Error ? error.message : 'Неизвестная ошибка',
+        message: errorMessage,
       },
       { status: 500 }
     )
