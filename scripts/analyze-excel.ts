@@ -39,10 +39,10 @@ workbook.SheetNames.forEach((sheetName, index) => {
   });
   
   // Анализируем типы данных в колонках
-  console.log(`  Типы данных по колонкам:`);
+  console.log(`  Типы данных по колонках:`);
   headers.forEach((header, colIndex) => {
     const columnData = rows
-      .map(row => row[colIndex])
+      .map((row: any) => row[colIndex])
       .filter(val => val !== null && val !== undefined && val !== '');
     
     if (columnData.length > 0) {
