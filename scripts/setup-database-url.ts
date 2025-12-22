@@ -58,3 +58,4 @@ console.log('\n✅ Файл .env обновлен!');
 console.log('\nТеперь можно выполнить:');
 console.log('  npx prisma migrate dev --name init');
 console.log('  npx prisma db seed');
+

@@ -47,8 +47,8 @@ export default function Navbar() {
           <div className="hidden md:block">
             <Link href="/demo">
               <Button variant="primary" size="default">
-                Запросить демо
-              </Button>
+              Запросить демо
+            </Button>
             </Link>
           </div>
 
@@ -85,8 +85,8 @@ export default function Navbar() {
                 ))}
                 <Link href="/demo" onClick={() => setMobileMenuOpen(false)} className="w-full">
                   <Button variant="primary" size="default" className="w-full">
-                    Запросить демо
-                  </Button>
+                  Запросить демо
+                </Button>
                 </Link>
               </div>
             </motion.div>

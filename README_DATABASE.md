@@ -64,3 +64,4 @@ npx tsx scripts/test-connection.ts
 - `PGPORT` (по умолчанию 5432)
 - `PGUSER` (или `POSTGRES_USER`, по умолчанию postgres)
 - `PGDATABASE` (или `POSTGRES_DB`, по умолчанию postgres)
+

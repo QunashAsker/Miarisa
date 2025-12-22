@@ -143,54 +143,54 @@ export default function DashboardMockup() {
         <div className="grid lg:grid-cols-3 gap-4 mb-4">
           {/* Map - Takes 2 columns */}
           <div className="lg:col-span-2">
-            <div className="relative rounded-lg p-4 border border-primary/10 overflow-hidden" style={{ 
-              background: 'linear-gradient(135deg, #2d3748 0%, #1a202c 50%, #2d3748 100%)',
-              minHeight: '200px'
-            }}>
-              {/* Satellite texture overlay */}
-              <div className="absolute inset-0 opacity-20" style={{
-                backgroundImage: `
-                  radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 1px, transparent 1px),
-                  radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 1px, transparent 1px),
-                  radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 2px, transparent 2px)
-                `,
-                backgroundSize: '40px 40px, 60px 60px, 80px 80px'
-              }} />
-              
-              {/* Irregular orchard polygons */}
-              <svg className="w-full h-full absolute inset-0" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
-                {polygons.map((poly, i) => (
-                  <motion.polygon
-                    key={i}
-                    points={poly.path}
-                    fill={poly.color}
-                    fillOpacity="0.4"
-                    stroke={poly.color}
-                    strokeWidth="1"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: poly.delay, duration: 0.4 }}
-                  />
-                ))}
-              </svg>
-              
-              {/* Legend */}
-              <div className="absolute bottom-2 left-2 flex gap-3 text-xs bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded border border-white/10">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded" style={{ backgroundColor: '#1a365d' }}></div>
-                  <span className="text-white/80">Здоровый</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded" style={{ backgroundColor: '#00897b' }}></div>
-                  <span className="text-white/80">Активный</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded" style={{ backgroundColor: '#dc2626' }}></div>
-                  <span className="text-white/80">Критично</span>
-                </div>
+          <div className="relative rounded-lg p-4 border border-primary/10 overflow-hidden" style={{ 
+            background: 'linear-gradient(135deg, #2d3748 0%, #1a202c 50%, #2d3748 100%)',
+            minHeight: '200px'
+          }}>
+            {/* Satellite texture overlay */}
+            <div className="absolute inset-0 opacity-20" style={{
+              backgroundImage: `
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 2px, transparent 2px)
+              `,
+              backgroundSize: '40px 40px, 60px 60px, 80px 80px'
+            }} />
+            
+            {/* Irregular orchard polygons */}
+            <svg className="w-full h-full absolute inset-0" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
+              {polygons.map((poly, i) => (
+                <motion.polygon
+                  key={i}
+                  points={poly.path}
+                  fill={poly.color}
+                  fillOpacity="0.4"
+                  stroke={poly.color}
+                  strokeWidth="1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: poly.delay, duration: 0.4 }}
+                />
+              ))}
+            </svg>
+            
+            {/* Legend */}
+            <div className="absolute bottom-2 left-2 flex gap-3 text-xs bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded border border-white/10">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded" style={{ backgroundColor: '#1a365d' }}></div>
+                <span className="text-white/80">Здоровый</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded" style={{ backgroundColor: '#00897b' }}></div>
+                <span className="text-white/80">Активный</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded" style={{ backgroundColor: '#dc2626' }}></div>
+                <span className="text-white/80">Критично</span>
               </div>
             </div>
           </div>
+        </div>
 
           {/* Operational Window - Takes 1 column */}
           <motion.div
@@ -371,7 +371,7 @@ export default function DashboardMockup() {
                 </div>
               </div>
             </div>
-          </div>
+        </div>
         </motion.div>
       </div>
 

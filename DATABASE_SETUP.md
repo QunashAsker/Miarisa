@@ -90,3 +90,4 @@ scripts/
   ├── analyze-excel.ts   # Анализ структуры Excel файла
   └── test-connection.ts # Тест подключения к БД
 ```
+

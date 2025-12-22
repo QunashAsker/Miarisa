@@ -37,3 +37,4 @@ postgresql://postgres:ВАШ_ПАРОЛЬ@postgres.railway.internal:5432/railway
 ## Альтернатива:
 
 Если у вас есть отдельные переменные (`PGHOST`, `PGPASSWORD` и т.д.), Railway может автоматически создать `DATABASE_URL`. Проверьте раздел Variables в Railway.
+

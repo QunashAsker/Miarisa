@@ -54,3 +54,4 @@ workbook.SheetNames.forEach((sheetName, index) => {
 });
 
 console.log('\n=== Анализ завершен ===\n');
+

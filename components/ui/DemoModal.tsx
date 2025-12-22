@@ -1,8 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import { useState } from 'react'
 import { X, TreePine, Play, Loader2, Satellite, Cpu } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Button from './Button'
@@ -17,17 +16,11 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
   const [selectedMode, setSelectedMode] = useState<'farmers' | 'demo' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingStep, setLoadingStep] = useState(0)
-  const [mounted, setMounted] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     area: ''
   })
-
-  // Ensure portal only renders on client
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleClose = () => {
     setSelectedMode(null)
@@ -84,7 +77,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
     setLoadingStep(0)
   }
 
-  const modalContent = (
+  return (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -94,7 +87,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-md"
+            className="fixed inset-0 z-50 bg-black/20 backdrop-blur-md"
           />
 
           {/* Modal */}
@@ -103,8 +96,8 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto"
-            style={{ paddingTop: 'max(4rem, env(safe-area-inset-top) + 2rem)' }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+            style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full max-h-[calc(100vh-4rem)] my-4 overflow-y-auto">
@@ -292,9 +285,4 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
       )}
     </AnimatePresence>
   )
-
-  // Use portal to render outside nav hierarchy
-  if (!mounted) return null
-  
-  return createPortal(modalContent, document.body)
 }
