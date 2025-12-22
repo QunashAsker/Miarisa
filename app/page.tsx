@@ -336,7 +336,7 @@ export default function Home() {
             className="absolute inset-0 flex items-center justify-center px-6 pointer-events-auto"
           >
             <div className="max-w-4xl mx-auto">
-              <div className="glassmorphism rounded-3xl p-8 md:p-12 backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl">
+              <div className="rounded-3xl p-8 md:p-12 backdrop-blur-xl bg-white/90 border border-slate-200 shadow-2xl">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-accent-red/20 rounded-xl flex items-center justify-center">
                     <span className="text-2xl">⚠️</span>
@@ -344,27 +344,27 @@ export default function Home() {
                   <span className="text-accent-red font-semibold uppercase tracking-wider text-sm">Проблема</span>
                 </div>
                 
-                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                <h2 className="text-3xl md:text-5xl font-bold text-[#1a365d] mb-6">
                   Традиционные методы устарели
                 </h2>
                 
-                <p className="text-xl text-white/70 leading-relaxed mb-8">
-                  Фермеры теряют до <span className="text-[#00897b] font-bold">30% урожая</span> из-за 
+                <p className="text-xl text-[#1a365d]/70 leading-relaxed mb-8">
+                  Фермеры теряют до <span className="text-accent-red font-bold">30% урожая</span> из-за 
                   неточных прогнозов, устаревших календарей и реактивного подхода к защите растений.
                 </p>
 
                 <div className="grid md:grid-cols-3 gap-6">
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="p-4 bg-accent-red/5 rounded-xl border border-accent-red/20">
                     <div className="text-3xl font-bold text-accent-red mb-2">30%</div>
-                    <div className="text-white/60 text-sm">Потери урожая</div>
+                    <div className="text-[#1a365d]/60 text-sm">Потери урожая</div>
                   </div>
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="p-4 bg-accent-amber/5 rounded-xl border border-accent-amber/20">
                     <div className="text-3xl font-bold text-accent-amber mb-2">40%</div>
-                    <div className="text-white/60 text-sm">Перерасход химии</div>
+                    <div className="text-[#1a365d]/60 text-sm">Перерасход химии</div>
                   </div>
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                    <div className="text-3xl font-bold text-white mb-2">∞</div>
-                    <div className="text-white/60 text-sm">Упущенных возможностей</div>
+                  <div className="p-4 bg-[#1a365d]/5 rounded-xl border border-[#1a365d]/20">
+                    <div className="text-3xl font-bold text-[#1a365d] mb-2">∞</div>
+                    <div className="text-[#1a365d]/60 text-sm">Упущенных возможностей</div>
                   </div>
                 </div>
               </div>
@@ -377,7 +377,7 @@ export default function Home() {
             className="absolute inset-0 flex items-center justify-center px-6 pointer-events-auto"
           >
             <div className="max-w-4xl mx-auto">
-              <div className="glassmorphism rounded-3xl p-8 md:p-12 backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl">
+              <div className="rounded-3xl p-8 md:p-12 backdrop-blur-xl bg-white/90 border border-slate-200 shadow-2xl">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-[#00897b]/20 rounded-xl flex items-center justify-center">
                     <Leaf className="w-6 h-6 text-[#00897b]" />
@@ -385,35 +385,35 @@ export default function Home() {
                   <span className="text-[#00897b] font-semibold uppercase tracking-wider text-sm">Решение</span>
                 </div>
                 
-                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                <h2 className="text-3xl md:text-5xl font-bold text-[#00897b] mb-6">
                   Miarisa Intelligence
                 </h2>
                 
-                <p className="text-xl text-white/70 leading-relaxed mb-8">
+                <p className="text-xl text-[#1a365d]/70 leading-relaxed mb-8">
                   Интеллектуальная платформа, которая анализирует данные в реальном времени 
                   и даёт <span className="text-[#00897b] font-bold">точные рекомендации</span>.
                 </p>
 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center gap-4 p-4 bg-[#00897b]/5 rounded-xl border border-[#00897b]/20">
                     <Database className="w-8 h-8 text-[#00897b]" />
                     <div>
-                      <div className="font-semibold text-white">IoT Сенсоры</div>
-                      <div className="text-white/60 text-sm">Непрерывный мониторинг 24/7</div>
+                      <div className="font-semibold text-[#1a365d]">IoT Сенсоры</div>
+                      <div className="text-[#1a365d]/60 text-sm">Непрерывный мониторинг 24/7</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center gap-4 p-4 bg-[#00897b]/5 rounded-xl border border-[#00897b]/20">
                     <Cpu className="w-8 h-8 text-[#00897b]" />
                     <div>
-                      <div className="font-semibold text-white">ИИ Аналитика</div>
-                      <div className="text-white/60 text-sm">Прогнозирование рисков болезней</div>
+                      <div className="font-semibold text-[#1a365d]">ИИ Аналитика</div>
+                      <div className="text-[#1a365d]/60 text-sm">Прогнозирование рисков болезней</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center gap-4 p-4 bg-[#00897b]/5 rounded-xl border border-[#00897b]/20">
                     <Target className="w-8 h-8 text-[#00897b]" />
                     <div>
-                      <div className="font-semibold text-white">Точные рекомендации</div>
-                      <div className="text-white/60 text-sm">Динамическая техкарта каждый день</div>
+                      <div className="font-semibold text-[#1a365d]">Точные рекомендации</div>
+                      <div className="text-[#1a365d]/60 text-sm">Динамическая техкарта каждый день</div>
                     </div>
                   </div>
                 </div>
@@ -427,7 +427,7 @@ export default function Home() {
             className="absolute inset-0 flex items-center justify-center px-6 pointer-events-auto"
           >
             <div className="max-w-4xl mx-auto">
-              <div className="glassmorphism rounded-3xl p-8 md:p-12 backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl">
+              <div className="rounded-3xl p-8 md:p-12 backdrop-blur-xl bg-white/90 border border-slate-200 shadow-2xl">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-accent-green/20 rounded-xl flex items-center justify-center">
                     <BarChart3 className="w-6 h-6 text-accent-green" />
@@ -435,34 +435,34 @@ export default function Home() {
                   <span className="text-accent-green font-semibold uppercase tracking-wider text-sm">Результаты</span>
                 </div>
                 
-                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                <h2 className="text-3xl md:text-5xl font-bold text-[#1a365d] mb-6">
                   Доказанная эффективность
                 </h2>
                 
-                <p className="text-xl text-white/70 leading-relaxed mb-8">
+                <p className="text-xl text-[#1a365d]/70 leading-relaxed mb-8">
                   Наши клиенты видят измеримые результаты уже в первый сезон.
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="p-6 bg-gradient-to-br from-[#00897b]/20 to-transparent rounded-2xl border border-[#00897b]/30">
+                  <div className="p-6 bg-gradient-to-br from-[#00897b]/10 to-[#00897b]/5 rounded-2xl border border-[#00897b]/30">
                     <div className="text-5xl font-bold text-[#00897b] mb-2">+25%</div>
-                    <div className="text-white font-semibold mb-1">Рост урожайности</div>
-                    <div className="text-white/60 text-sm">За счет оптимального времени обработки</div>
+                    <div className="text-[#1a365d] font-semibold mb-1">Рост урожайности</div>
+                    <div className="text-[#1a365d]/60 text-sm">За счет оптимального времени обработки</div>
                   </div>
-                  <div className="p-6 bg-gradient-to-br from-accent-green/20 to-transparent rounded-2xl border border-accent-green/30">
+                  <div className="p-6 bg-gradient-to-br from-accent-green/10 to-accent-green/5 rounded-2xl border border-accent-green/30">
                     <div className="text-5xl font-bold text-accent-green mb-2">-35%</div>
-                    <div className="text-white font-semibold mb-1">Снижение затрат</div>
-                    <div className="text-white/60 text-sm">На химические препараты</div>
+                    <div className="text-[#1a365d] font-semibold mb-1">Снижение затрат</div>
+                    <div className="text-[#1a365d]/60 text-sm">На химические препараты</div>
                   </div>
-                  <div className="p-6 bg-gradient-to-br from-white/10 to-transparent rounded-2xl border border-white/20">
-                    <div className="text-5xl font-bold text-white mb-2">3x</div>
-                    <div className="text-white font-semibold mb-1">ROI</div>
-                    <div className="text-white/60 text-sm">Окупаемость в первый год</div>
+                  <div className="p-6 bg-gradient-to-br from-[#1a365d]/10 to-[#1a365d]/5 rounded-2xl border border-[#1a365d]/20">
+                    <div className="text-5xl font-bold text-[#1a365d] mb-2">3x</div>
+                    <div className="text-[#1a365d] font-semibold mb-1">ROI</div>
+                    <div className="text-[#1a365d]/60 text-sm">Окупаемость в первый год</div>
                   </div>
-                  <div className="p-6 bg-gradient-to-br from-white/10 to-transparent rounded-2xl border border-white/20">
-                    <div className="text-5xl font-bold text-white mb-2">24/7</div>
-                    <div className="text-white font-semibold mb-1">Мониторинг</div>
-                    <div className="text-white/60 text-sm">Непрерывный контроль сада</div>
+                  <div className="p-6 bg-gradient-to-br from-[#1a365d]/10 to-[#1a365d]/5 rounded-2xl border border-[#1a365d]/20">
+                    <div className="text-5xl font-bold text-[#1a365d] mb-2">24/7</div>
+                    <div className="text-[#1a365d] font-semibold mb-1">Мониторинг</div>
+                    <div className="text-[#1a365d]/60 text-sm">Непрерывный контроль сада</div>
                   </div>
                 </div>
               </div>
@@ -475,16 +475,16 @@ export default function Home() {
             className="absolute inset-0 flex items-center justify-center px-6 pointer-events-auto"
           >
             <div className="max-w-3xl mx-auto text-center">
-              <div className="glassmorphism rounded-3xl p-8 md:p-16 backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl">
+              <div className="rounded-3xl p-8 md:p-16 backdrop-blur-xl bg-white/90 border border-slate-200 shadow-2xl">
                 <div className="w-20 h-20 bg-[#00897b]/20 rounded-full flex items-center justify-center mx-auto mb-8">
                   <Shield className="w-10 h-10 text-[#00897b]" />
                 </div>
                 
-                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                <h2 className="text-3xl md:text-5xl font-bold text-[#1a365d] mb-6">
                   Готовы к трансформации?
                 </h2>
                 
-                <p className="text-xl text-white/70 leading-relaxed mb-10">
+                <p className="text-xl text-[#1a365d]/70 leading-relaxed mb-10">
                   Присоединяйтесь к инновационным хозяйствам, которые уже 
                   используют силу ИИ для защиты своих садов.
                 </p>
@@ -501,7 +501,7 @@ export default function Home() {
                   </Button>
                 </div>
 
-                <p className="mt-6 text-white/50 text-sm">
+                <p className="mt-6 text-[#1a365d]/50 text-sm">
                   Без кредитной карты • 14 дней бесплатно • Отмена в любое время
                 </p>
               </div>
