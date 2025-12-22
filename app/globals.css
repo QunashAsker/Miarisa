@@ -10,10 +10,12 @@
   }
   html {
     scroll-behavior: smooth;
+    background: #1a365d;
   }
   body {
-    @apply bg-background text-primary font-sans antialiased;
+    @apply text-primary font-sans antialiased;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    background: transparent;
   }
 }
 

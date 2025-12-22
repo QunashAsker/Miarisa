@@ -135,14 +135,14 @@ export default function Home() {
   }
 
   return (
-    <main className="bg-background">
+    <main className="bg-transparent">
       <Navbar />
       
       {/* Контейнер со scroll-controlled видео */}
       <div ref={containerRef} className="relative" style={{ height: '500vh' }}>
         
         {/* Фиксированный видео фон */}
-        <div className="fixed inset-0 w-full h-screen overflow-hidden -z-10">
+        <div className="fixed inset-0 w-full h-screen overflow-hidden z-0">
           {/* Индикатор загрузки */}
           {isVideoLoading && !isMobile && (
             <motion.div
@@ -202,7 +202,7 @@ export default function Home() {
         </div>
 
         {/* Секция 1: Hero */}
-        <section className="sticky top-0 h-screen flex items-center justify-center px-6">
+        <section className="sticky top-0 h-screen flex items-center justify-center px-6 z-10 relative">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -278,7 +278,7 @@ export default function Home() {
         </section>
 
         {/* Секция 2: Проблема */}
-        <section className="sticky top-0 h-screen flex items-center justify-center px-6">
+        <section className="sticky top-0 h-screen flex items-center justify-center px-6 z-10 relative">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -323,7 +323,7 @@ export default function Home() {
         </section>
 
         {/* Секция 3: Решение */}
-        <section className="sticky top-0 h-screen flex items-center justify-center px-6">
+        <section className="sticky top-0 h-screen flex items-center justify-center px-6 z-10 relative">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -377,7 +377,7 @@ export default function Home() {
         </section>
 
         {/* Секция 4: Результаты */}
-        <section className="sticky top-0 h-screen flex items-center justify-center px-6">
+        <section className="sticky top-0 h-screen flex items-center justify-center px-6 z-10 relative">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -428,7 +428,7 @@ export default function Home() {
         </section>
 
         {/* Секция 5: CTA */}
-        <section className="sticky top-0 h-screen flex items-center justify-center px-6">
+        <section className="sticky top-0 h-screen flex items-center justify-center px-6 z-10 relative">
           <motion.div
             initial="hidden"
             whileInView="visible"
