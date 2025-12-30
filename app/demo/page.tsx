@@ -46,25 +46,6 @@ export default function DemoPage() {
   // Расчет потребности в азоте (упрощенная формула)
   const nitrogenRequirement = Math.round(targetYield * 0.6)
   
-  // Функция генерации тестовых данных
-  const seedSensorData = useCallback(async () => {
-    setIsSeeding(true)
-    try {
-      const response = await fetch('/api/sensors/seed', { method: 'POST' })
-      if (response.ok) {
-        setSensorError(null)
-        // Сразу загружаем свежие данные
-        await fetchSensorData()
-      } else {
-        throw new Error('Не удалось создать тестовые данные')
-      }
-    } catch (error) {
-      console.error('Ошибка генерации данных:', error)
-    } finally {
-      setIsSeeding(false)
-    }
-  }, [fetchSensorData])
-  
   // Функция загрузки данных с датчиков
   const fetchSensorData = useCallback(async () => {
     try {
@@ -90,6 +71,25 @@ export default function DemoPage() {
       setSensorError(error instanceof Error ? error.message : 'Ошибка подключения')
     }
   }, [])
+  
+  // Функция генерации тестовых данных
+  const seedSensorData = useCallback(async () => {
+    setIsSeeding(true)
+    try {
+      const response = await fetch('/api/sensors/seed', { method: 'POST' })
+      if (response.ok) {
+        setSensorError(null)
+        // Сразу загружаем свежие данные
+        await fetchSensorData()
+      } else {
+        throw new Error('Не удалось создать тестовые данные')
+      }
+    } catch (error) {
+      console.error('Ошибка генерации данных:', error)
+    } finally {
+      setIsSeeding(false)
+    }
+  }, [fetchSensorData])
   
   // Polling данных датчиков каждые 5 секунд в режиме мониторинга
   useEffect(() => {
