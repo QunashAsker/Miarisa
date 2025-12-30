@@ -1,20 +1,32 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, ArrowRight, Apple, Sliders, Thermometer, Droplet, Wind, Bug, CheckCircle2, AlertTriangle, XCircle, TrendingUp, Snowflake, Sprout, Flower, CloudRain } from 'lucide-react'
+import { Lock, ArrowRight, Apple, Sliders, Thermometer, Droplet, Wind, Bug, CheckCircle2, AlertTriangle, XCircle, TrendingUp, Snowflake, Sprout, Flower, CloudRain, Radio, Settings } from 'lucide-react'
 import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
 import type { SimulationResult } from '@/app/actions/simulation'
 
 type Step = 'auth' | 'onboarding' | 'dashboard'
+type DashboardMode = 'simulator' | 'monitoring'
+
+// Интерфейс для данных датчиков
+interface SensorData {
+  id: number
+  timestamp: string
+  temperature: number
+  humidity: number
+  leafWetness: number
+  windSpeed: number
+  soilMoisture: number
+}
 
 export default function DemoPage() {
   const [step, setStep] = useState<Step>('auth')
   const [password, setPassword] = useState('')
   const [selectedCrop, setSelectedCrop] = useState('Яблоня Гала')
   const [targetYield, setTargetYield] = useState(40)
-  const [gdd, setGdd] = useState(0) // Накопленные градусо-дни (Base 5°C)
+  const [gdd, setGdd] = useState(0) // Накопленные градусо-дни (Base 5°C) - остаётся слайдером
   const [temperature, setTemperature] = useState(22)
   const [leafWetness, setLeafWetness] = useState(8)
   const [windSpeed, setWindSpeed] = useState(2)
@@ -24,9 +36,53 @@ export default function DemoPage() {
   // Состояние для результатов симуляции
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Режим дашборда: симулятор (слайдеры) или мониторинг (live данные)
+  const [dashboardMode, setDashboardMode] = useState<DashboardMode>('simulator')
+  const [lastSensorUpdate, setLastSensorUpdate] = useState<Date | null>(null)
+  const [sensorError, setSensorError] = useState<string | null>(null)
 
   // Расчет потребности в азоте (упрощенная формула)
   const nitrogenRequirement = Math.round(targetYield * 0.6)
+  
+  // Функция загрузки данных с датчиков
+  const fetchSensorData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/sensors/latest')
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Нет данных от датчиков')
+      }
+      
+      const data: SensorData = await response.json()
+      
+      // Обновляем состояние датчиками (кроме GDD - он остаётся слайдером)
+      setTemperature(Math.round(data.temperature * 10) / 10)
+      setLeafWetness(Math.round(data.leafWetness * 10) / 10)
+      setWindSpeed(Math.round(data.windSpeed * 10) / 10)
+      setSoilMoisture(Math.round(data.soilMoisture))
+      setLastSensorUpdate(new Date(data.timestamp))
+      setSensorError(null)
+      
+    } catch (error) {
+      console.error('Ошибка получения данных датчиков:', error)
+      setSensorError(error instanceof Error ? error.message : 'Ошибка подключения')
+    }
+  }, [])
+  
+  // Polling данных датчиков каждые 5 секунд в режиме мониторинга
+  useEffect(() => {
+    if (step !== 'dashboard' || dashboardMode !== 'monitoring') return
+    
+    // Первый запрос сразу
+    fetchSensorData()
+    
+    // Затем каждые 5 секунд
+    const interval = setInterval(fetchSensorData, 5000)
+    
+    return () => clearInterval(interval)
+  }, [step, dashboardMode, fetchSensorData])
 
   // Вызов API при изменении параметров
   useEffect(() => {
@@ -375,16 +431,78 @@ export default function DemoPage() {
             className="min-h-screen p-6"
           >
             <div className="max-w-7xl mx-auto">
-              <div className="mb-6 flex items-center justify-between">
+              <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-primary mb-2">Симулятор Miarisa Intelligence</h1>
+                  <h1 className="text-3xl font-bold text-primary mb-2">
+                    {dashboardMode === 'monitoring' ? 'Мониторинг' : 'Симулятор'} Miarisa Intelligence
+                  </h1>
                   <p className="text-primary/60">Цифровой двойник сада: {selectedCrop}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 bg-accent-green rounded-full animate-pulse"></div>
-                  <span className="text-sm text-primary/60">Система активна</span>
+                
+                {/* Переключатель режимов */}
+                <div className="flex items-center gap-4">
+                  <div className="flex bg-primary/5 rounded-lg p-1 border border-primary/10">
+                    <button
+                      onClick={() => setDashboardMode('simulator')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                        dashboardMode === 'simulator'
+                          ? 'bg-white shadow-md text-primary'
+                          : 'text-primary/60 hover:text-primary'
+                      }`}
+                    >
+                      <Settings className="w-4 h-4" />
+                      Симулятор
+                    </button>
+                    <button
+                      onClick={() => setDashboardMode('monitoring')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                        dashboardMode === 'monitoring'
+                          ? 'bg-white shadow-md text-primary'
+                          : 'text-primary/60 hover:text-primary'
+                      }`}
+                    >
+                      <Radio className="w-4 h-4" />
+                      Мониторинг
+                    </button>
+                  </div>
+                  
+                  {/* Индикатор LIVE */}
+                  {dashboardMode === 'monitoring' && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-accent-red/10 border border-accent-red/30 rounded-full">
+                      <div className="h-2 w-2 bg-accent-red rounded-full animate-pulse"></div>
+                      <span className="text-xs font-semibold text-accent-red uppercase">Live</span>
+                    </div>
+                  )}
+                  
+                  {dashboardMode === 'simulator' && (
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 bg-accent-green rounded-full animate-pulse"></div>
+                      <span className="text-sm text-primary/60">Система активна</span>
+                    </div>
+                  )}
                 </div>
               </div>
+              
+              {/* Информация о последнем обновлении датчиков */}
+              {dashboardMode === 'monitoring' && (
+                <div className="mb-4 p-3 bg-accent-teal/5 border border-accent-teal/20 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Radio className="w-4 h-4 text-accent-teal" />
+                    <span className="text-sm text-primary/70">
+                      Данные поступают от IoT датчиков каждые 5 секунд
+                    </span>
+                  </div>
+                  <div className="text-sm text-primary/60">
+                    {sensorError ? (
+                      <span className="text-accent-red">⚠️ {sensorError}</span>
+                    ) : lastSensorUpdate ? (
+                      <span>Обновлено: {lastSensorUpdate.toLocaleTimeString('ru-RU')}</span>
+                    ) : (
+                      <span>Ожидание данных...</span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="grid lg:grid-cols-2 gap-6">
                 {/* Левая колонка: Панель управления */}
@@ -394,9 +512,16 @@ export default function DemoPage() {
                   transition={{ delay: 0.2 }}
                   className="glassmorphism rounded-2xl p-6 shadow-xl border border-white/30 backdrop-blur-xl bg-white/90"
                 >
-                  <div className="flex items-center gap-2 mb-6 pb-4 border-b border-primary/10">
-                    <Sliders className="w-5 h-5 text-primary" />
-                    <h2 className="text-lg font-semibold text-primary">Параметры среды</h2>
+                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-primary/10">
+                    <div className="flex items-center gap-2">
+                      <Sliders className="w-5 h-5 text-primary" />
+                      <h2 className="text-lg font-semibold text-primary">Параметры среды</h2>
+                    </div>
+                    {dashboardMode === 'monitoring' && (
+                      <span className="text-xs text-accent-teal bg-accent-teal/10 px-2 py-1 rounded">
+                        📡 От датчиков
+                      </span>
+                    )}
                   </div>
 
                   <div className="space-y-6">
@@ -436,11 +561,12 @@ export default function DemoPage() {
                     </div>
 
                     {/* Слайдер 2: Температура */}
-                    <div>
+                    <div className={dashboardMode === 'monitoring' ? 'opacity-90' : ''}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <Thermometer className="w-4 h-4 text-primary/60" />
                           <label className="text-sm font-medium text-primary">Температура воздуха</label>
+                          {dashboardMode === 'monitoring' && <span className="text-xs text-accent-teal">📡</span>}
                         </div>
                         <span className="text-sm font-bold text-primary">{temperature}°C</span>
                       </div>
@@ -449,24 +575,30 @@ export default function DemoPage() {
                         min="-5"
                         max="35"
                         value={temperature}
-                        onChange={(e) => setTemperature(Number(e.target.value))}
-                        className="w-full h-2 bg-primary/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        onChange={(e) => dashboardMode === 'simulator' && setTemperature(Number(e.target.value))}
+                        disabled={dashboardMode === 'monitoring'}
+                        className={`w-full h-2 bg-primary/10 rounded-lg appearance-none accent-primary ${
+                          dashboardMode === 'monitoring' ? 'cursor-not-allowed' : 'cursor-pointer'
+                        }`}
                       />
                       <div className="flex justify-between text-xs text-primary/40 mt-1">
                         <span>-5°C</span>
                         <span>+35°C</span>
                       </div>
                       <p className="text-xs text-primary/50 mt-2">
-                        Используется для расчета риска болезней и эффективности препаратов
+                        {dashboardMode === 'monitoring' 
+                          ? 'Данные с температурного датчика'
+                          : 'Используется для расчета риска болезней и эффективности препаратов'}
                       </p>
                     </div>
 
                     {/* Слайдер 3: Влажность листа */}
-                    <div>
+                    <div className={dashboardMode === 'monitoring' ? 'opacity-90' : ''}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <Droplet className="w-4 h-4 text-primary/60" />
                           <label className="text-sm font-medium text-primary">Влажность листа</label>
+                          {dashboardMode === 'monitoring' && <span className="text-xs text-accent-teal">📡</span>}
                         </div>
                         <span className={`text-sm font-bold ${leafWetness > 10 ? 'text-accent-red' : 'text-primary'}`}>
                           {leafWetness} ч
@@ -478,8 +610,11 @@ export default function DemoPage() {
                           min="0"
                           max="24"
                           value={leafWetness}
-                          onChange={(e) => setLeafWetness(Number(e.target.value))}
-                          className="w-full h-2 bg-primary/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                          onChange={(e) => dashboardMode === 'simulator' && setLeafWetness(Number(e.target.value))}
+                          disabled={dashboardMode === 'monitoring'}
+                          className={`w-full h-2 bg-primary/10 rounded-lg appearance-none accent-primary ${
+                            dashboardMode === 'monitoring' ? 'cursor-not-allowed' : 'cursor-pointer'
+                          }`}
                           style={{
                             background: leafWetness > 10 
                               ? `linear-gradient(to right, #dc2626 0%, #dc2626 ${(leafWetness / 24) * 100}%, #e5e7eb ${(leafWetness / 24) * 100}%, #e5e7eb 100%)`
@@ -498,11 +633,12 @@ export default function DemoPage() {
                     </div>
 
                     {/* Слайдер 4: Скорость ветра */}
-                    <div>
+                    <div className={dashboardMode === 'monitoring' ? 'opacity-90' : ''}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <Wind className="w-4 h-4 text-primary/60" />
                           <label className="text-sm font-medium text-primary">Скорость ветра</label>
+                          {dashboardMode === 'monitoring' && <span className="text-xs text-accent-teal">📡</span>}
                         </div>
                         <span className={`text-sm font-bold ${windSpeed > 5 ? 'text-accent-red' : 'text-primary'}`}>
                           {windSpeed} м/с
@@ -514,8 +650,11 @@ export default function DemoPage() {
                           min="0"
                           max="15"
                           value={windSpeed}
-                          onChange={(e) => setWindSpeed(Number(e.target.value))}
-                          className="w-full h-2 bg-primary/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                          onChange={(e) => dashboardMode === 'simulator' && setWindSpeed(Number(e.target.value))}
+                          disabled={dashboardMode === 'monitoring'}
+                          className={`w-full h-2 bg-primary/10 rounded-lg appearance-none accent-primary ${
+                            dashboardMode === 'monitoring' ? 'cursor-not-allowed' : 'cursor-pointer'
+                          }`}
                         />
                         {windSpeed > 5 && (
                           <div className="absolute top-0 left-[33.33%] w-[66.67%] h-2 bg-accent-red/30 pointer-events-none"></div>
@@ -529,11 +668,12 @@ export default function DemoPage() {
                     </div>
 
                     {/* Слайдер 5: Влажность почвы */}
-                    <div>
+                    <div className={dashboardMode === 'monitoring' ? 'opacity-90' : ''}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <CloudRain className="w-4 h-4 text-primary/60" />
                           <label className="text-sm font-medium text-primary">Влажность почвы</label>
+                          {dashboardMode === 'monitoring' && <span className="text-xs text-accent-teal">📡</span>}
                         </div>
                         <span className={`text-sm font-bold ${soilMoisture < 60 ? 'text-accent-red' : 'text-primary'}`}>
                           {soilMoisture}%
@@ -545,8 +685,11 @@ export default function DemoPage() {
                           min="0"
                           max="100"
                           value={soilMoisture}
-                          onChange={(e) => setSoilMoisture(Number(e.target.value))}
-                          className="w-full h-2 bg-primary/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                          onChange={(e) => dashboardMode === 'simulator' && setSoilMoisture(Number(e.target.value))}
+                          disabled={dashboardMode === 'monitoring'}
+                          className={`w-full h-2 bg-primary/10 rounded-lg appearance-none accent-primary ${
+                            dashboardMode === 'monitoring' ? 'cursor-not-allowed' : 'cursor-pointer'
+                          }`}
                           style={{
                             background: soilMoisture < 60 
                               ? `linear-gradient(to right, #dc2626 0%, #dc2626 ${(soilMoisture / 100) * 100}%, #e5e7eb ${(soilMoisture / 100) * 100}%, #e5e7eb 100%)`

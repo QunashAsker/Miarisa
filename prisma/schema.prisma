@@ -128,3 +128,16 @@ model EmergencyProtocol {
 
   @@map("emergency_protocols")
 }
+
+// 9. SensorLog - данные с IoT датчиков (или симулятора)
+model SensorLog {
+  id           Int      @id @default(autoincrement())
+  timestamp    DateTime @default(now())
+  temperature  Float    // Температура воздуха (°C)
+  humidity     Float    // Влажность воздуха (%)
+  leafWetness  Float    // Влажность листа (часы намокания)
+  windSpeed    Float    // Скорость ветра (м/с)
+  soilMoisture Float    // Влажность почвы (%)
+
+  @@map("sensor_logs")
+}
