@@ -41,9 +41,29 @@ export default function DemoPage() {
   const [dashboardMode, setDashboardMode] = useState<DashboardMode>('simulator')
   const [lastSensorUpdate, setLastSensorUpdate] = useState<Date | null>(null)
   const [sensorError, setSensorError] = useState<string | null>(null)
+  const [isSeeding, setIsSeeding] = useState(false)
 
   // Расчет потребности в азоте (упрощенная формула)
   const nitrogenRequirement = Math.round(targetYield * 0.6)
+  
+  // Функция генерации тестовых данных
+  const seedSensorData = useCallback(async () => {
+    setIsSeeding(true)
+    try {
+      const response = await fetch('/api/sensors/seed', { method: 'POST' })
+      if (response.ok) {
+        setSensorError(null)
+        // Сразу загружаем свежие данные
+        await fetchSensorData()
+      } else {
+        throw new Error('Не удалось создать тестовые данные')
+      }
+    } catch (error) {
+      console.error('Ошибка генерации данных:', error)
+    } finally {
+      setIsSeeding(false)
+    }
+  }, [fetchSensorData])
   
   // Функция загрузки данных с датчиков
   const fetchSensorData = useCallback(async () => {
@@ -492,9 +512,18 @@ export default function DemoPage() {
                       Данные поступают от IoT датчиков каждые 5 секунд
                     </span>
                   </div>
-                  <div className="text-sm text-primary/60">
+                  <div className="flex items-center gap-3 text-sm text-primary/60">
                     {sensorError ? (
-                      <span className="text-accent-red">⚠️ {sensorError}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-accent-red">⚠️ {sensorError}</span>
+                        <button
+                          onClick={seedSensorData}
+                          disabled={isSeeding}
+                          className="px-3 py-1 bg-primary text-white rounded-lg text-xs hover:bg-primary/80 disabled:opacity-50"
+                        >
+                          {isSeeding ? '⏳ Генерация...' : '🔄 Создать тестовые данные'}
+                        </button>
+                      </div>
                     ) : lastSensorUpdate ? (
                       <span>Обновлено: {lastSensorUpdate.toLocaleTimeString('ru-RU')}</span>
                     ) : (

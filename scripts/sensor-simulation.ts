@@ -9,9 +9,20 @@
  * Запуск: npx tsx scripts/sensor-simulation.ts
  */
 
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Используем публичный URL для локального подключения
+const databaseUrl = process.env.DATABASE_URL;
+console.log('🔗 Подключение к БД:', databaseUrl?.replace(/:[^:@]+@/, ':***@'));
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: databaseUrl,
+    },
+  },
+});
 
 // Состояние симулятора (плавные волны)
 interface SimulatorState {
